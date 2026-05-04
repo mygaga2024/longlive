@@ -141,7 +141,17 @@ python3 -m pytest tests/ -v               # 运行测试
 
 | 位置 | 版本 | Commit | 说明 |
 |---|---|---|---|---|
-| 本地 (macOS) | v3.2.15 | `2c8e06f` | 开发主分支 |
-| GitHub | v3.2.15 | `2c8e06f` | `ghcr.io/mygaga2024/reminder:latest` |
-| 绿联 NAS | v3.2.15 | `2c8e06f` | 生产运行，6 调度任务正常 |
+| 本地 (macOS) | v3.2.15 | `82cf7d4` | 开发主分支 |
+| GitHub | v3.2.15 | `82cf7d4` | `ghcr.io/mygaga2024/reminder:latest` |
+| 绿联 NAS | v3.2.15 | `82cf7d4` | 生产运行，compose 配置已完整同步 |
 | 极空间 | v3.2.15 | — | 适配方案已完成，待部署验证 |
+
+### 绿联 NAS 升级说明
+
+绿联 Docker "项目" 页面因网络限制（Docker Hub 被墙），通过 Web UI 直接拉取 ghcr.io 镜像可能失败。可通过 SSH 手动升级：
+
+```bash
+cd /volume1/docker/reminder
+docker compose pull
+docker compose up -d
+```
