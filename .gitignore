@@ -22,6 +22,8 @@ code_protocol.md
 .code_protocol.md
 DEVELOPMENT_PROTOCOL.md
 reminder_运维手册.md
+AGENTS.md
+project_status.md
 
 # Node.js (for miniapp, currently paused)
 package-lock.json
