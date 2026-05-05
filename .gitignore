@@ -24,6 +24,7 @@ DEVELOPMENT_PROTOCOL.md
 reminder_运维手册.md
 AGENTS.md
 project_status.md
+test_persistence.py
 
 # Node.js (for miniapp, currently paused)
 package-lock.json
