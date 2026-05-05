@@ -671,7 +671,10 @@ input, select, button, textarea { font-family: inherit; }
             </div>
             <div class="section-head">
                 <div class="section-title">通知记录</div>
-                <span class="toggle-hidden-btn" id="toggleHiddenBtn" onclick="toggleHiddenLogs()">显示已隐藏</span>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <span class="toggle-hidden-btn" id="toggleHiddenBtn" onclick="toggleHiddenLogs()" style="color:var(--c-text3)">显示已隐藏</span>
+                    <span onclick="clearCompletedTasks()" style="color:var(--c-red); font-size:0.7rem; font-weight:600; cursor:pointer; background:rgba(255,69,58,0.08); padding:4px 10px; border-radius:8px;">清空已完成</span>
+                </div>
             </div>
             <div id="logContainer"></div>
         </div>
@@ -715,13 +718,6 @@ input, select, button, textarea { font-family: inherit; }
                         <div class="set-label"><h4>短信 / 电话</h4><p>紧急通知接入</p></div>
                     </div>
                     <div class="set-right"><i class="fas fa-chevron-right"></i></div>
-                </div>
-                <div class="set-item" onclick="clearCompletedTasks()">
-                    <div class="set-left">
-                        <div class="set-icon" style="background:rgba(255,69,58,0.12); color:var(--c-red)"><i class="fas fa-broom"></i></div>
-                        <div class="set-label"><h4>清空已完成任务</h4><p>一键删除所有历史已完成任务</p></div>
-                    </div>
-                    <div class="set-right"><span style="color:var(--c-red); font-size:0.75rem; font-weight:700;">清空</span></div>
                 </div>
                 <div class="set-item" onclick="openAbout()">
                     <div class="set-left">
