@@ -133,6 +133,42 @@ class TestReminderEndpoints:
         assert len(updated) == 1
         assert updated[0]["title"] == "新标题"
 
+    def test_clear_completed_reminders(self, client, app):
+        r1 = client.post('/api/reminders', json={
+            "title": "已完成任务",
+            "time": "10:00",
+            "repeat": "daily"
+        }).get_json()
+        r2 = client.post('/api/reminders', json={
+            "title": "待办任务",
+            "time": "11:00",
+            "repeat": "daily"
+        }).get_json()
+
+        client.put(f'/api/reminders/{r1["id"]}', json={
+            "title": "已完成任务",
+            "time": "10:00",
+            "repeat": "daily",
+            "status": "completed"
+        })
+
+        app.config['GLOBAL_LOGS'] = [
+            {"id": "log-1", "reminder_id": r1["id"], "title": "已完成任务", "triggered_at": "2024-01-01T00:00:00"},
+            {"id": "log-2", "reminder_id": r2["id"], "title": "待办任务", "triggered_at": "2024-01-02T00:00:00"},
+        ]
+
+        resp = client.post('/api/reminders/clear-completed')
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["deleted"] == 1
+        assert data["logs_deleted"] == 1
+
+        state = client.get('/api/state').get_json()
+        assert len(state["db"]["reminders"]) == 1
+        assert state["db"]["reminders"][0]["id"] == r2["id"]
+        assert len(app.config['GLOBAL_LOGS']) == 1
+        assert app.config['GLOBAL_LOGS'][0]["reminder_id"] == r2["id"]
+
 
 class TestSettingsEndpoint:
     def test_update_settings_success(self, client):

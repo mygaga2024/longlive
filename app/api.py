@@ -167,6 +167,41 @@ def register_routes(app, db: dict, logs: list, scheduler):
                 logger.error(f"隐藏日志失败: {e}")
                 return jsonify({"error": "隐藏日志失败"}), 500
 
+    @app.route('/api/reminders/clear-completed', methods=['POST'])
+    @require_api_key
+    def clear_completed():
+        with db_lock:
+            try:
+                completed_ids = {r["id"] for r in db["reminders"] if r["status"] == "completed"}
+                before_reminders = len(db["reminders"])
+
+                for rid in completed_ids:
+                    try:
+                        scheduler.remove_job(rid)
+                    except Exception:
+                        pass
+
+                db["reminders"] = [r for r in db["reminders"] if r["status"] != "completed"]
+                after_reminders = len(db["reminders"])
+
+                g_logs = app.config['GLOBAL_LOGS']
+                before_logs = len(g_logs)
+                g_logs[:] = [l for l in g_logs if l.get("reminder_id") not in completed_ids]
+                after_logs = len(g_logs)
+
+                save_json(LOGS_FILE, g_logs)
+                save_json(CONFIG_FILE, db)
+                update_scheduler(scheduler, db, _make_notify_fn(app))
+                logger.info(f"清空已完成任务: 删除 {before_reminders - after_reminders} 条提醒, {before_logs - after_logs} 条日志")
+                return jsonify({
+                    "status": "ok",
+                    "deleted": before_reminders - after_reminders,
+                    "logs_deleted": before_logs - after_logs
+                })
+            except Exception as e:
+                logger.error(f"清空已完成任务失败: {e}")
+                return jsonify({"error": "清空已完成任务失败"}), 500
+
     @app.route('/api/wxlogin', methods=['POST'])
     @require_api_key
     def wx_login():

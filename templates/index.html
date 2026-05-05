@@ -716,6 +716,13 @@ input, select, button, textarea { font-family: inherit; }
                     </div>
                     <div class="set-right"><i class="fas fa-chevron-right"></i></div>
                 </div>
+                <div class="set-item" onclick="clearCompletedTasks()">
+                    <div class="set-left">
+                        <div class="set-icon" style="background:rgba(255,69,58,0.12); color:var(--c-red)"><i class="fas fa-broom"></i></div>
+                        <div class="set-label"><h4>清空已完成任务</h4><p>一键删除所有历史已完成任务</p></div>
+                    </div>
+                    <div class="set-right"><span style="color:var(--c-red); font-size:0.75rem; font-weight:700;">清空</span></div>
+                </div>
                 <div class="set-item" onclick="openAbout()">
                     <div class="set-left">
                         <div class="set-icon" style="background:rgba(10,132,255,0.12); color:var(--c-blue)"><i class="fas fa-info-circle"></i></div>
@@ -1136,11 +1143,19 @@ function dragEnd(e) { e.currentTarget.classList.remove('dragging'); dragSrcId = 
 
 // ─── Toggle Complete / Uncomplete (需求3) ───
 async function toggleStatus(id, currentStatus) {
+    const r = S.db.reminders.find(x => x.id === id);
+    if (!r) return;
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
     await fetch(`/api/reminders/${id}`, {
         method: 'PUT',
         headers: apiHeaders(),
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({
+            title: r.title,
+            time: r.time,
+            repeat: r.repeat,
+            priority: r.priority,
+            status: newStatus
+        })
     });
     sync();
 }
@@ -1324,6 +1339,27 @@ function paintSettings() {
 }
 
 // ─── Actions ───
+async function clearCompletedTasks() {
+    const completed = (S.db.reminders || []).filter(r => r.status === 'completed');
+    if (completed.length === 0) {
+        showToast('没有已完成的任务', 'info-circle', 'var(--c-text3)');
+        return;
+    }
+    if (!confirm(`确认删除所有 ${completed.length} 条已完成任务？此操作不可撤销。`)) return;
+    try {
+        const res = await fetch('/api/reminders/clear-completed', {
+            method: 'POST',
+            headers: apiHeaders()
+        });
+        const data = await res.json();
+        await sync();
+        showToast(`已删除 ${data.deleted} 条任务, ${data.logs_deleted} 条日志`);
+    } catch(e) {
+        console.error('clearCompletedTasks failed', e);
+        showToast('操作失败', 'times-circle', 'var(--c-red)');
+    }
+}
+
 async function doAction(id, type) {
     if (type === 'delete' && !confirm('确认删除该任务？')) return;
     await fetch(`/api/reminders/${id}`, {
